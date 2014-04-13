@@ -1,4 +1,4 @@
-function [finalMap, finalsse] = KMeans(clusters, r)
+function finalMap = KMeans(clusters, r)
 
 filename = '/Users/karthikchandrasekar/Desktop/SecondSem/SML/ProgrammingAssignment/dataset1.txt';
 delimiter = '';
@@ -14,7 +14,7 @@ AllsseMap = zeros(r,1);
 %The following entire procedure is repeadted r times
 rCount = 0;
 
-for totalrun = 1:4
+for totalrun = 1:r
     
     rCount = rCount + 1;
 
@@ -119,5 +119,15 @@ disp(AllInstanceLabels);
 disp('AllsseMap');
 disp(AllsseMap);
 
-finalMap = AllInstanceLabels;
-finalsse = AllsseMap;
+
+%Find the cluster with the minimum sse and return it
+minSSE = 10000;
+
+for k = 1:r
+    if(minSSE > AllsseMap(k))
+     minSSEIndex = k;
+    end    
+end
+
+finalMap = AllInstanceLabels(:,minSSEIndex);
+
