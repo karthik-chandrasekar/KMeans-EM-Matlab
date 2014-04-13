@@ -1,30 +1,24 @@
-function finalMap = KMeans(clusters, r)
+function finalMap = KMeans(clusters, r, filename)
 
-filename = '/Users/karthikchandrasekar/Desktop/SecondSem/SML/ProgrammingAssignment/dataset1.txt';
+%filename = '/Users/karthikchandrasekar/Desktop/SecondSem/SML/ProgrammingAssignment/dataset1.txt';
 delimiter = '';
 M = dlmread(filename, delimiter);
 [Mrow, Mcol] = size(M);
-%clusters = 3;
-%r = 4;
 centroidMatrix = zeros(clusters, Mcol);
 AllInstanceLabels = zeros(Mrow, r);
 AllsseMap = zeros(r,1);
  
+%The following entire procedure is repeadted r times with different intial
+%seeds everytime
 
-%The following entire procedure is repeadted r times
-rCount = 0;
-
-for totalrun = 1:r
+for rCount = 1:r
     
-    rCount = rCount + 1;
+    %The following procedure has to be repeated for r times
 
-    %Initially picking seeds randomly
+    %Initially picking k seeds randomly
     for k=1:clusters
         centroidMatrix(k,:) = M(randi([1, Mrow], 1, 1), :);
     end
-    disp(centroidMatrix);
-
-    %The following procedure has to be repeated for r times
 
     convergenceCount = 0;
     maxDiff = 1;
@@ -40,7 +34,7 @@ for totalrun = 1:r
         centroidInstanceCount = zeros(clusters, 1);
         newCentroid = zeros(clusters, Mcol);
 
-        %Single iteration to cluster instances
+        %Cluster instances
         for index = 1:Mrow
             inputVect = M(index, :);
             minVal = 1000000;
@@ -57,10 +51,11 @@ for totalrun = 1:r
             end
             centroidMap(index) = minIndex;
     
-            %Concurrently updating next centroid support values
+            %Concurrently updating next centroid computation values
             centroidInstanceCount(minIndex) = centroidInstanceCount(minIndex)+1;
             newCentroid(minIndex, :) = newCentroid(minIndex, :) + M(index, :);
         end
+        %One iteration is over
 
         %Compute new centroid
         for index = 1:clusters
@@ -87,42 +82,38 @@ for totalrun = 1:r
         disp(convergenceCount);
     end    
 
-    %Finding SSE
-
+    %Finding SSE - Sum of squared errors of prediction
     sseMap = zeros(clusters, 1);
-    disp('Sse Map');
-    disp(sseMap);
+    disp('SSE Map');
     
     for index = 1:Mrow
         inputVect = M(index, :);
         clusterIndex = centroidMap(index);
-        sseMap(clusterIndex) = sseMap(clusterIndex) + norm(inputVect - oldCentroidMatrix(minIndex));
+        sseMap(clusterIndex) = sseMap(clusterIndex) + norm(inputVect - oldCentroidMatrix(clusterIndex));
     end
 
-    disp('Sse Map');
+    disp('SSE Map');
     disp(sseMap);
 
-    disp('Sum sse map');
+    disp('Sum SSE map');
     disp(sum(sseMap));
     
     disp('rCount');
     disp(rCount);
     
-   AllInstanceLabels(:,totalrun) = centroidMap; 
-   AllsseMap(totalrun) = sum(sseMap);
+   AllInstanceLabels(:,rCount) = centroidMap; 
+   AllsseMap(rCount) = sum(sseMap);
    
 end
 
 disp('All instance labels');
-disp(AllInstanceLabels);
+%disp(AllInstanceLabels);
 
 disp('AllsseMap');
 disp(AllsseMap);
 
-
-%Find the cluster with the minimum sse and return it
+%Find the cluster with the minimum SSE and select it
 minSSE = 10000;
-
 for k = 1:r
     if(minSSE > AllsseMap(k))
      minSSEIndex = k;
