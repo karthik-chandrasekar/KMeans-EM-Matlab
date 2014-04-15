@@ -1,4 +1,4 @@
-function finalMap = KMeans(clusters, r, filename)
+function finalSSE = KMeans(clusters, r, filename)
 
 %filename = '/Users/karthikchandrasekar/Desktop/SecondSem/SML/ProgrammingAssignment/dataset1.txt';
 delimiter = '';
@@ -114,11 +114,13 @@ disp(AllsseMap);
 
 %Find the cluster with the minimum SSE and select it
 minSSE = 10000;
+
 for k = 1:r
     if(minSSE > AllsseMap(k))
-     minSSEIndex = k;
+     minSSE = AllsseMap(k);
+     %minSSEIndex = k;
     end    
 end
 
-finalMap = AllInstanceLabels(:,minSSEIndex);
-
+%finalMap = AllInstanceLabels(:,minSSEIndex);
+finalSSE = minSSE;
