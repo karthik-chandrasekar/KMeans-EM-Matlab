@@ -91,7 +91,8 @@ for rCount = 1:r
     for index = 1:Mrow
         inputVect = M(index, :);
         clusterIndex = centroidMap(index);
-        sseMap(clusterIndex) = sseMap(clusterIndex) + norm(inputVect - oldCentroidMatrix(clusterIndex));
+        instanceNorm =  norm(inputVect - oldCentroidMatrix(clusterIndex));
+        sseMap(clusterIndex) = sseMap(clusterIndex) + instanceNorm * instanceNorm;
     end
 
     disp('SSE Map');
