@@ -16,8 +16,10 @@ for rCount = 1:r
     %The following procedure has to be repeated for r times
 
     %Initially picking k seeds randomly
+    
+    y = datasample(1:Mrow,clusters,'Replace',false);
     for k=1:clusters
-        centroidMatrix(k,:) = M(randi([1, Mrow], 1, 1), :);
+        centroidMatrix(k,:) = M(y(k), :);
     end
 
     convergenceCount = 0;
@@ -30,11 +32,11 @@ for rCount = 1:r
         %CentroidMap which maps the instance to a cluster
         centroidMap = zeros(Mrow,1);
 
-        %Updating centroid computing data structures
+        %Updating next centroid values
         centroidInstanceCount = zeros(clusters, 1);
         newCentroid = zeros(clusters, Mcol);
 
-        %Cluster instances
+        %Iterating over the input data points
         for index = 1:Mrow
             inputVect = M(index, :);
             minVal = 1000000;
