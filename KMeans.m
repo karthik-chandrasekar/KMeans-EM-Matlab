@@ -5,13 +5,10 @@ delimiter = '';
 M = dlmread(filename, delimiter);
 [Mrow, Mcol] = size(M);
 centroidMatrix = zeros(clusters, Mcol);
-AllInstanceLabels = zeros(Mrow, r);
-AllsseMap = zeros(r,1);
 
 curSSEMap = zeros(Mrow, 1);
 minSSEMap = zeros(Mrow, 1);
 minSSE = 1000000;
-
  
 %The following entire procedure is repeadted r times with different intial
 %seeds everytime
@@ -19,9 +16,7 @@ minSSE = 1000000;
 for rCount = 1:r
     
     %The following procedure has to be repeated for r times
-
-    %Initially picking k seeds randomly
-    
+    %Initially picking k seeds randomly    
     y = datasample(1:Mrow,clusters,'Replace',false);
     for k=1:clusters
         centroidMatrix(k,:) = M(y(k), :);
@@ -68,44 +63,26 @@ for rCount = 1:r
         for index = 1:clusters
             newCentroid(index, :) = newCentroid(index, :)/centroidInstanceCount(index); 
         end
-    
-        disp('Old centroid  - ');
-        disp(centroidMatrix);
-
-        disp('New centroid - ');
-        disp(newCentroid);
-
+   
         diffCentroid = abs(centroidMatrix - newCentroid);
-        disp('Diff centroid');
-        disp(diffCentroid);
-
-        disp('Max difference ');
         maxDiff = max(max(diffCentroid));
-        disp(maxDiff);
     
         %copy new centroid to the old centroid
         oldCentroidMatrix = centroidMatrix;
         centroidMatrix = newCentroid;
-        disp(convergenceCount);
         
-        %Find the SSE after every iteration of single K Mean run
-        
+        %Find the SSE after every iteration of single K Mean run      
         curSSE = 0;
         for index = 1:Mrow
             inputVect = M(index, :);
             clusterIndex = centroidMap(index);
             instanceNorm =  norm(inputVect - oldCentroidMatrix(clusterIndex));
             curSSE = curSSE + instanceNorm * instanceNorm;
-        end
-        
-        curSSEMap(convergenceCount) = curSSE;
-       
+        end   
+        curSSEMap(convergenceCount) = curSSE;       
     end    
 
-    %Finding SSE - Sum of squared errors of prediction after every run
-    sseMap = zeros(clusters, 1);
-    disp('SSE Map');
-    
+    %Finding SSE - Sum of squared errors of prediction after every run        
     curSSE = 0;
     for index = 1:Mrow
         inputVect = M(index, :);
@@ -113,13 +90,7 @@ for rCount = 1:r
         instanceNorm =  norm(inputVect - oldCentroidMatrix(clusterIndex));
         curSSE = curSSE + instanceNorm * instanceNorm;
     end
-    
-    disp('rCount');
-    disp(rCount);
-    
-    AllInstanceLabels(:,rCount) = centroidMap; 
-    AllsseMap(rCount) = sum(sseMap);
-    
+            
     %Manintaining only the maximum sse results at any point of time
     if(curSSE < minSSE)
         minSSE = curSSE;        
@@ -127,10 +98,6 @@ for rCount = 1:r
     end
    
 end
-
-%finalMap = AllInstanceLabels(:,minSSEIndex);
-finalSSE = minSSEMap;
-
 
 
 %Plot the figure for SSE per iteration vs Iteration
@@ -144,3 +111,5 @@ plot(iterationXaxis , nonZeroMinSSEMap);
 xlabel('Iteration');
 ylabel('Observed SSE per iteration');
 grid minor
+
+finalSSE = nonZeroMinSSEMap;
