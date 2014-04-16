@@ -7,6 +7,11 @@ M = dlmread(filename, delimiter);
 centroidMatrix = zeros(clusters, Mcol);
 AllInstanceLabels = zeros(Mrow, r);
 AllsseMap = zeros(r,1);
+
+curSSEMap = zeros(Mrow, 1);
+minSSEMap = zeros(Mrow, 1);
+minSSE = 1000000;
+
  
 %The following entire procedure is repeadted r times with different intial
 %seeds everytime
@@ -82,48 +87,60 @@ for rCount = 1:r
         oldCentroidMatrix = centroidMatrix;
         centroidMatrix = newCentroid;
         disp(convergenceCount);
+        
+        %Find the SSE after every iteration of single K Mean run
+        
+        curSSE = 0;
+        for index = 1:Mrow
+            inputVect = M(index, :);
+            clusterIndex = centroidMap(index);
+            instanceNorm =  norm(inputVect - oldCentroidMatrix(clusterIndex));
+            curSSE = curSSE + instanceNorm * instanceNorm;
+        end
+        
+        curSSEMap(convergenceCount) = curSSE;
+       
     end    
 
-    %Finding SSE - Sum of squared errors of prediction
+    %Finding SSE - Sum of squared errors of prediction after every run
     sseMap = zeros(clusters, 1);
     disp('SSE Map');
     
+    curSSE = 0;
     for index = 1:Mrow
         inputVect = M(index, :);
         clusterIndex = centroidMap(index);
         instanceNorm =  norm(inputVect - oldCentroidMatrix(clusterIndex));
-        sseMap(clusterIndex) = sseMap(clusterIndex) + instanceNorm * instanceNorm;
+        curSSE = curSSE + instanceNorm * instanceNorm;
     end
-
-    disp('SSE Map');
-    disp(sseMap);
-
-    disp('Sum SSE map');
-    disp(sum(sseMap));
     
     disp('rCount');
     disp(rCount);
     
-   AllInstanceLabels(:,rCount) = centroidMap; 
-   AllsseMap(rCount) = sum(sseMap);
+    AllInstanceLabels(:,rCount) = centroidMap; 
+    AllsseMap(rCount) = sum(sseMap);
+    
+    %Manintaining only the maximum sse results at any point of time
+    if(curSSE < minSSE)
+        minSSE = curSSE;        
+        minSSEMap = curSSEMap;          
+    end
    
 end
 
-disp('All instance labels');
-%disp(AllInstanceLabels);
-
-disp('AllsseMap');
-disp(AllsseMap);
-
-%Find the cluster with the minimum SSE and select it
-minSSE = 10000;
-
-for k = 1:r
-    if(minSSE > AllsseMap(k))
-     minSSE = AllsseMap(k);
-     %minSSEIndex = k;
-    end    
-end
-
 %finalMap = AllInstanceLabels(:,minSSEIndex);
-finalSSE = minSSE;
+finalSSE = minSSEMap;
+
+
+
+%Plot the figure for SSE per iteration vs Iteration
+
+nonZeroMinSSEMap = minSSEMap(minSSEMap~=0)';
+[nzRow, nzCol] = size(nonZeroMinSSEMap);
+iterationXaxis = 1:nzCol;
+
+figure
+plot(iterationXaxis , nonZeroMinSSEMap);
+xlabel('Iteration');
+ylabel('Observed SSE per iteration');
+grid minor
