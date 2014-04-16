@@ -5,7 +5,6 @@ delimiter = '';
 M = dlmread(filename, delimiter);
 [Mrow, Mcol] = size(M);
 
-
 %The following entire procedure is repeadted r times with different intial
 %seeds everytime
 
@@ -16,9 +15,8 @@ for rCount = 1:1
 
     mean = zeros(clusters, Mcol);
     covari = zeros(clusters, Mcol);
-    phi = ones(1, clusters);
+    phi = [0.3, 0.1, 0.6]
     resp = zeros(clusters, Mrow);
-    logLikeli = zeros(Mrow,1);
     newLogLikeli = zeros(Mrow,1);
     
     for i=1:clusters
@@ -29,18 +27,19 @@ for rCount = 1:1
     convergenceCount = 0;
     maxDiff = 1;
     %Every run is iterated till the log likelihood is converged. 
-    %while maxDiff > 0.1
-    for index = 1:200
+    while maxDiff > 0.001
+    %for index = 1:200
     
         convergenceCount = convergenceCount +1;
         
         %Following procedure has to be repeated clusters times
                
         totalPhi = zeros(Mrow, 1);
+        logLikeli = zeros(Mrow,1);
+
         for i = 1:clusters
         
-         %E-Step
-            
+         %E-Step            
             gDist = mvnpdf(M, mean(i,:), covari(i,:));
             logLikeli(:,1) = logLikeli(:, 1) + log(phi(i)*gDist);
             totalPhi = totalPhi + phi(i)*gDist;
@@ -62,7 +61,7 @@ for rCount = 1:1
         mean(i,:) = meanNum/sum(1-resp(i,:));
      
         
-        %Updating nwe sigma
+        %Updating new sigma
         covarNum = 0;
         for j = 1:Mrow
             covarNum = covarNum + ((1-resp(i,j)).*((M(j,:) - mean(i,:)).^2));
@@ -76,6 +75,7 @@ for rCount = 1:1
         diffLogLikeli = abs(logLikeli) - abs(newLogLikeli);
         maxDiff = abs(max(diffLogLikeli));
         
+        maxDiff
         %Updating log likelihood
         newLogLikeli = logLikeli;
         
