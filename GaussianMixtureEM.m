@@ -1,4 +1,4 @@
-function [] = GaussianMixtureEM(clusters, r, filename)
+function [] = GaussianMixtureEM(clusters, r, filename, seedSelection)
 
 %filename = '/Users/karthikchandrasekar/Desktop/SecondSem/SML/ProgrammingAssignment/dataset1.txt';
 delimiter = '';
@@ -8,7 +8,7 @@ M = dlmread(filename, delimiter);
 %The following entire procedure is repeadted r times with different intial
 %seeds everytime
 
-for rCount = 1:1
+for rCount = 1:3
 
     %Randomly pick initial gMean and covriance and phi.
     y = datasample(1:Mrow,clusters,'Replace',false);
@@ -21,11 +21,20 @@ for rCount = 1:1
     newLogLikeli = zeros(Mrow,1);
     sumLogLikeli = zeros(1,Mrow);   
  
-    for i=1:clusters
-        gMean(i,:) = M(y(i),:);
-        gCovar(i,:) = i*var(M(y(i),:));
+    if (seedSelection == 'R')
+        %Random mean and variance selection
+        for i=1:clusters
+            gMean(i,:) = M(y(i),:);
+            gCovar(i,:) = i*var(M(y(i),:));
+        end
+
+    else     
+        %Pick best seeds from Kmeans
+        gMean = abs(KMeans(clusters, r, filename, 'N'));
+        gCovar = 2 * gMean;
+
     end
-      
+    
     convergenceCount = 0;
     maxDiff = 1;
     
