@@ -1,6 +1,6 @@
 function finalSSE = KMeans(clusters, r, filename, figure)
 
-%filename = '/Users/karthikchandrasekar/Desktop/SecondSem/SML/ProgrammingAssignment/dataset1.txt';
+%Load data from the given input file
 delimiter = '';
 M = dlmread(filename, delimiter);
 [Mrow, Mcol] = size(M);
@@ -10,13 +10,10 @@ curSSEMap = zeros(Mrow, 1);
 minSSEMap = zeros(Mrow, 1);
 minSSE = 1000000;
  
-%The following entire procedure is repeadted r times with different intial
-%seeds everytime
+%The following entire procedure is repeadted r times with different intial seeds everytime
 
 for rCount = 1:r
-    
-    %The following procedure has to be repeated for r times
-    %Initially picking k seeds randomly    
+       
     y = datasample(1:Mrow,clusters,'Replace',false);
     for k=1:clusters
         centroidMatrix(k,:) = M(y(k), :);
@@ -29,14 +26,14 @@ for rCount = 1:r
     
         convergenceCount = convergenceCount +1;
     
-        %CentroidMap which maps the instance to a cluster
+        %CentroidMap which maps the instance to a cluster it belongs to.
         centroidMap = zeros(Mrow,1);
 
         %Updating next centroid values
         centroidInstanceCount = zeros(clusters, 1);
         newCentroid = zeros(clusters, Mcol);
 
-        %Iterating over the input data points
+        %Iterating over all the input data points
         for index = 1:Mrow
             inputVect = M(index, :);
             minVal = 1000000;
@@ -57,7 +54,6 @@ for rCount = 1:r
             centroidInstanceCount(minIndex) = centroidInstanceCount(minIndex)+1;
             newCentroid(minIndex, :) = newCentroid(minIndex, :) + M(index, :);
         end
-        %One iteration is over
 
         %Compute new centroid
         for index = 1:clusters
@@ -71,7 +67,7 @@ for rCount = 1:r
         oldCentroidMatrix = centroidMatrix;
         centroidMatrix = newCentroid;
         
-        %Find the SSE after every iteration of single K Mean run      
+        %Find the SSE after every iteration of single K-Means run      
         curSSE = 0;
         for index = 1:Mrow
             inputVect = M(index, :);
@@ -82,7 +78,7 @@ for rCount = 1:r
         curSSEMap(convergenceCount) = curSSE;       
     end    
 
-    %Finding SSE - Sum of squared errors of prediction after every run        
+    %Finding SSE at the end of single K-Mean run        
     curSSE = 0;
     for index = 1:Mrow
         inputVect = M(index, :);
@@ -91,7 +87,7 @@ for rCount = 1:r
         curSSE = curSSE + instanceNorm * instanceNorm;
     end
             
-    %Manintaining only the maximum sse results at any point of time
+    %Manintaining only the maximum SSE results. 
     if(curSSE < minSSE)
         minSSE = curSSE;        
         minSSEMap = curSSEMap;          
@@ -100,7 +96,7 @@ for rCount = 1:r
 end
 
 
-%Plot the figure for SSE per iteration vs Iteration
+%Plot the figure for SSE per iteration vs Iteration number 
 
 nonZeroMinSSEMap = minSSEMap(minSSEMap~=0)';
 [nzRow, nzCol] = size(nonZeroMinSSEMap);
