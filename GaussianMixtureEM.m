@@ -10,80 +10,85 @@ M = dlmread(filename, delimiter);
 
 for rCount = 1:1
 
-    %Randomly pick initial mean and variance 
+    %Randomly pick initial gMean and covriance and phi.
     y = datasample(1:Mrow,clusters,'Replace',false);
 
-    mean = zeros(clusters, Mcol);
-    covari = zeros(clusters, Mcol);
-    phi = [0.3, 0.1, 0.6]
-    resp = zeros(clusters, Mrow);
-    newLogLikeli = zeros(Mrow,1);
+    gMean = zeros(clusters, Mcol);
+    gCovar = zeros(clusters, Mcol);
+    gPhi = rand(clusters, 1)';
     
+    gGamma = zeros(clusters, Mrow);
+    newLogLikeli = zeros(Mrow,1);
+    sumLogLikeli = zeros(1,Mrow);   
+ 
     for i=1:clusters
-        mean(i,:) = M(y(i),:);
-        covari(i,:) = i*var(M(y(i),:));
+        gMean(i,:) = M(y(i),:);
+        gCovar(i,:) = i*var(M(y(i),:));
     end
       
     convergenceCount = 0;
     maxDiff = 1;
-    %Every run is iterated till the log likelihood is converged. 
-    while maxDiff > 0.001
-    %for index = 1:200
     
+    %Every run is iterated till the log likelihood is converged. 
+    %while maxDiff > 0.001
+    
+    for iterCount = 1:20
         convergenceCount = convergenceCount +1;
         
-        %Following procedure has to be repeated clusters times
+        %Following procedure has to be repeated number of cluster times
                
         totalPhi = zeros(Mrow, 1);
         logLikeli = zeros(Mrow,1);
 
         for i = 1:clusters
         
-         %E-Step            
-            gDist = mvnpdf(M, mean(i,:), covari(i,:));
-            logLikeli(:,1) = logLikeli(:, 1) + log(phi(i)*gDist);
-            totalPhi = totalPhi + phi(i)*gDist;
+         %E-Step - Find log likeli hood value        
+            gDist = mvnpdf(M, gMean(i,:), gCovar(i,:));
+            logLikeli(:,1) = logLikeli(:, 1) + log(gPhi(i)*gDist);
+            totalPhi = totalPhi + gPhi(i)*gDist;
         end  
-        %Finding responsibility of each component 
+        
+        %Finding gamma for  each component 
         for i = 1:clusters
-         
-            resp(i,:) = (phi(i) * gDist) ./ totalPhi;
+            gGamma(i,:) = (gPhi(i) * gDist) ./ totalPhi
         end
         
+        %M-Step - Find new mean, covariance and phi values
         
-        %M-Step - Find new mean and variance
-        
-        %Updating new mean
-        meanNum  = 0;
-        for j=1:Mrow
-                meanNum = meanNum + ((1-resp(i,j)).*M(j,:));
+        for i = 1:clusters
+            %Updating new gMean
+            gMeanNum  = 0;
+            for j=1:Mrow
+                gMeanNum = gMeanNum + ((1-gGamma(i,j)).*M(j,:));
+            end
+            gMean(i,:) = gMeanNum/sum(1-gGamma(i,:));
+
+            %Updating new sigma
+            covarNum = 0;
+            for j = 1:Mrow
+                covarNum = covarNum + ((1-gGamma(i,j)).*((M(j,:) - gMean(i,:)).^2));
+            end
+            gCovar(i,:) = abs(covarNum/sum(1-gGamma(i,:)));
+
+            %Updating new gPhi
+            gPhi(i) = sum(gGamma(i,:)/Mrow);
+            
         end
-        mean(i,:) = meanNum/sum(1-resp(i,:));
-     
-        
-        %Updating new sigma
-        covarNum = 0;
-        for j = 1:Mrow
-            covarNum = covarNum + ((1-resp(i,j)).*((M(j,:) - mean(i,:)).^2));
-        end
-        covari(i,:) = covarNum/sum(1-resp(i,:));
-        
-        %Updating new phi
-        phi(i) = sum(resp(i,:)/Mrow);
-                
+            
         %Checking for convergence
-        diffLogLikeli = abs(logLikeli) - abs(newLogLikeli);
+        diffLogLikeli = abs(logLikeli - newLogLikeli);
         maxDiff = abs(max(diffLogLikeli));
         
         maxDiff
         %Updating log likelihood
         newLogLikeli = logLikeli;
-        
+        sumLogLikeli(convergenceCount) = sum(logLikeli);       
+ 
     end   
 end
+sumLogLikeli = sumLogLikeli(sumLogLikeli~=0)
 figure
-plot(logLikeli)
+plot(sumLogLikeli)
 xlabel('Iteration');
 ylabel('Observed Data Log-likelihood');
 grid minor
-
