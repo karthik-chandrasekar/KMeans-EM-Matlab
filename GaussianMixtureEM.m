@@ -59,16 +59,16 @@ for rCount = 1:1
             %Updating new gMean
             gMeanNum  = 0;
             for j=1:Mrow
-                gMeanNum = gMeanNum + ((1-gGamma(i,j)).*M(j,:));
+                gMeanNum = gMeanNum + ((gGamma(i,j)).*M(j,:));
             end
-            gMean(i,:) = gMeanNum/sum(1-gGamma(i,:));
+            gMean(i,:) = gMeanNum/sum(gGamma(i,:));
 
             %Updating new sigma
             covarNum = 0;
             for j = 1:Mrow
-                covarNum = covarNum + ((1-gGamma(i,j)).*((M(j,:) - gMean(i,:)).^2));
+                covarNum = covarNum + ((gGamma(i,j)).*((M(j,:) - gMean(i,:)).^2));
             end
-            gCovar(i,:) = abs(covarNum/sum(1-gGamma(i,:)));
+            gCovar(i,:) = abs(covarNum/sum(gGamma(i,:)));
 
             %Updating new gPhi
             gPhi(i) = sum(gGamma(i,:)/Mrow);
@@ -77,9 +77,8 @@ for rCount = 1:1
             
         %Checking for convergence
         diffLogLikeli = abs(logLikeli - newLogLikeli);
-        maxDiff = abs(max(diffLogLikeli));
+        maxDiff = max(diffLogLikeli);
         
-        maxDiff
         %Updating log likelihood
         newLogLikeli = logLikeli;
         sumLogLikeli(convergenceCount) = sum(logLikeli);       
