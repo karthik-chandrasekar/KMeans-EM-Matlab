@@ -1,4 +1,4 @@
-function finalSSE = KMeans(clusters, r, filename)
+function finalSSE = KMeans(clusters, r, filename, figure)
 
 %filename = '/Users/karthikchandrasekar/Desktop/SecondSem/SML/ProgrammingAssignment/dataset1.txt';
 delimiter = '';
@@ -106,10 +106,12 @@ nonZeroMinSSEMap = minSSEMap(minSSEMap~=0)';
 [nzRow, nzCol] = size(nonZeroMinSSEMap);
 iterationXaxis = 1:nzCol;
 
-figure
-plot(iterationXaxis , nonZeroMinSSEMap);
-xlabel('Iteration');
-ylabel('Observed SSE per iteration');
-grid minor
+if (figure == 'Y')
+    figure
+    plot(iterationXaxis , nonZeroMinSSEMap);
+    xlabel('Iteration');
+    ylabel('Observed SSE per iteration');
+    grid minor
+end
 
-finalSSE = nonZeroMinSSEMap;
+finalSSE = oldCentroidMatrix;
