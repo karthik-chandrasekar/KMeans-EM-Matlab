@@ -1,6 +1,5 @@
 function [] = GaussianMixtureEM(clusters, r, filename, seedSelection)
 
-%filename = '/Users/karthikchandrasekar/Desktop/SecondSem/SML/ProgrammingAssignment/dataset1.txt';
 delimiter = '';
 M = dlmread(filename, delimiter);
 [Mrow, Mcol] = size(M);
@@ -8,12 +7,10 @@ M = dlmread(filename, delimiter);
 maxLogLikeliVal = -100000000;
 finalLogLikeli = zeros(1, Mrow);
 
-%The following entire procedure is repeadted r times with different intial
-%seeds everytime
+%The following entire procedure is repeadted r times 
 
 for rCount = 1:r
 
-    %Randomly pick initial gMean and covriance and phi.
     y = datasample(1:Mrow,clusters,'Replace',false);
 
     gMean = zeros(clusters, Mcol);
@@ -25,14 +22,14 @@ for rCount = 1:r
     sumLogLikeli = zeros(1,Mrow);   
  
     if (seedSelection == 'R')
-        %Random mean and variance selection
+        %Initial values are selected randomly
         for i=1:clusters
             gMean(i,:) = M(y(i),:);
             gCovar(i,:) = i*var(M(y(i),:));
         end
 
     else     
-        %Pick best seeds from Kmeans
+        %Centroids returned by K-Means will be used as initial values
         gMean = abs(KMeans(clusters, r, filename, 'N'));
         gCovar = 2 * gMean;
 
@@ -41,10 +38,7 @@ for rCount = 1:r
     convergenceCount = 0;
     maxDiff = 1;
     
-    %Every run is iterated till the log likelihood is converged. 
-    %while maxDiff > 0.001
     
-    %for iterCount = 1:20
     while maxDiff > 0.00001    
         convergenceCount = convergenceCount +1;
         
@@ -67,7 +61,7 @@ for rCount = 1:r
         end
         
         %M-Step - Find new mean, covariance and phi values
-        
+     
         for i = 1:clusters
             %Updating new gMean
             gMeanNum  = 0;
@@ -104,6 +98,8 @@ for rCount = 1:r
     end
     
 end
+
+%Plotting figure
 finalLogLikeli = finalLogLikeli(finalLogLikeli~=0)
 figure
 plot(finalLogLikeli)
