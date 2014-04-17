@@ -5,10 +5,13 @@ delimiter = '';
 M = dlmread(filename, delimiter);
 [Mrow, Mcol] = size(M);
 
+maxLogLikeliVal = -100000000;
+finalLogLikeli = zeros(1, Mrow);
+
 %The following entire procedure is repeadted r times with different intial
 %seeds everytime
 
-for rCount = 1:3
+for rCount = 1:r
 
     %Randomly pick initial gMean and covriance and phi.
     y = datasample(1:Mrow,clusters,'Replace',false);
@@ -41,7 +44,8 @@ for rCount = 1:3
     %Every run is iterated till the log likelihood is converged. 
     %while maxDiff > 0.001
     
-    for iterCount = 1:20
+    %for iterCount = 1:20
+    while maxDiff > 0.00001    
         convergenceCount = convergenceCount +1;
         
         %Following procedure has to be repeated number of cluster times
@@ -59,7 +63,7 @@ for rCount = 1:3
         
         %Finding gamma for  each component 
         for i = 1:clusters
-            gGamma(i,:) = (gPhi(i) * gDist) ./ totalPhi
+            gGamma(i,:) = (gPhi(i) * gDist) ./ totalPhi;
         end
         
         %M-Step - Find new mean, covariance and phi values
@@ -93,10 +97,16 @@ for rCount = 1:3
         sumLogLikeli(convergenceCount) = sum(logLikeli);       
  
     end   
+    
+    %Picking the maximum log likeli values
+    if (maxLogLikeliVal<sum(sumLogLikeli))
+        finalLogLikeli = sumLogLikeli;
+    end
+    
 end
-sumLogLikeli = sumLogLikeli(sumLogLikeli~=0)
+finalLogLikeli = finalLogLikeli(finalLogLikeli~=0)
 figure
-plot(sumLogLikeli)
+plot(finalLogLikeli)
 xlabel('Iteration');
 ylabel('Observed Data Log-likelihood');
 grid minor
