@@ -75,7 +75,7 @@ for rCount = 1:r
             instanceNorm =  norm(inputVect - oldCentroidMatrix(clusterIndex));
             curSSE = curSSE + instanceNorm * instanceNorm;
         end   
-        curSSEMap(convergenceCount) = curSSE;       
+        curSSEMap(convergenceCount) = curSSE/Mrow;       
     end    
 
     %Finding SSE at the end of single K-Mean run        
